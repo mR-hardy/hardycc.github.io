@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSE ICT 主機外科手術解剖體驗 v6.0</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;800&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121218;
+            --manga-border: #000000;
+            --primary-red: #ff2a5f;
+            --blood-dark: #800020;
+            --tech-cyan: #00f0ff;
+            --tech-yellow: #ffe600;
+            --panel-bg: #f4f1ea;
+            --text-dark: #111111;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Noto Sans TC', sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Manga Background Effect */
+        .manga-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.85) 100%),
+                repeating-linear-gradient(45deg, #181820, #181820 10px, #13131a 10px, #13131a 20px);
+            z-index: 1;
+        }
+
+        /* iPad 1024x768 Main Frame */
+        #app {
+            position: relative;
+            width: 1024px;
+            height: 768px;
+            margin: 0 auto;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #232330;
+            border: 4px solid var(--manga-border);
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(255, 255, 255, 0.1);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header (Avoid top-left Safari buttons) */
+        header {
+            height: 60px;
+            background: var(--tech-yellow);
+            border-bottom: 4px solid var(--manga-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px 0 110px;
+            z-index: 10;
+        }
+
+        .logo-title {
+            font-family: 'Chakra Petch', 'Noto Sans TC', sans-serif;
+            font-weight: 900;
+            font-size: 22px;
+            color: #000;
+            text-shadow: 2px 2px 0px #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .timer-box {
+            background: #000;
+            color: var(--primary-red);
+            padding: 4px 12px;
+            font-family: 'Chakra Petch', monospace;
+            font-size: 20px;
+            font-weight: 900;
+            border: 2px solid #fff;
+            box-shadow: 2px 2px 0 #000;
+            letter-spacing: 1px;
+        }
+
+        .patient-badge {
+            background: var(--primary-red);
+            color: #fff;
+            padding: 4px 12px;
+            font-size: 13px;
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0 #000;
+            font-weight: 700;
+            transform: rotate(-1deg);
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: 708px;
+            display: none;
+            z-index: 5;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Screen 1: Select Screen */
+        #select-screen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2b2b36 0%, #15151c 100%);
+            gap: 25px;
+        }
+
+        .select-title {
+            color: #fff;
+            font-size: 30px;
+            font-weight: 900;
+            text-align: center;
+            text-shadow: 3px 3px 0 var(--primary-red), 5px 5px 0 #000;
+            letter-spacing: 2px;
+        }
+
+        .patient-cards {
+            display: flex;
+            gap: 30px;
+        }
+
+        .card {
+            width: 330px;
+            height: 440px;
+            background: var(--panel-bg);
+            border: 4px solid var(--manga-border);
+            box-shadow: 8px 8px 0px #000;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px var(--tech-cyan);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 180px;
+            border: 3px solid #000;
+            background: #ccc;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            color: #000;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.4;
+            text-align: left;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* Screen 2: Operating Room Canvas */
+        #surgery-screen {
+            flex-direction: row;
+            background: #111116;
+            position: relative;
+        }
+
+        .operating-table {
+            width: 700px;
+            height: 100%;
+            position: relative;
+            background: #1c1c24;
+            overflow: hidden;
+            border-right: 4px solid #000;
+        }
+
+        .surgery-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        #pc-case {
+            position: absolute;
+            width: 580px;
+            height: 650px;
+            top: 25px;
+            left: 80px;
+            background: #282834;
+            border: 5px solid #000;
+            box-shadow: inset 0 0 30px #000;
+            border-radius: 8px;
+        }
+
+        #motherboard {
+            position: absolute;
+            width: 410px;
+            height: 580px;
+            top: 35px;
+            left: 30px;
+            background: #184e3d;
+            border: 4px solid #000;
+            background-image: 
+                radial-gradient(#246a53 15%, transparent 16%),
+                radial-gradient(#246a53 15%, transparent 16%);
+            background-size: 16px 16px;
+            background-position: 0 0, 8px 8px;
+        }
+
+        /* Rear I/O Panel */
+        .io-panel {
+            position: absolute;
+            top: 15px;
+            left: -32px;
+            width: 32px;
+            height: 500px;
+            background: #909090;
+            border: 3px solid #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 2px;
+            gap: 10px;
+            z-index: 12;
+        }
+
+        .port-item {
+            width: 24px;
+            background: #222;
+            border: 2px solid #000;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s;
+        }
+
+        .port-item:hover {
+            transform: scale(1.2);
+            border-color: var(--tech-yellow);
+            z-index: 30;
+        }
+
+        .port-ps2 { height: 24px; border-radius: 50%; background: #9370DB; }
+        .port-hdmi { height: 16px; background: #333; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+        .port-dp { height: 16px; background: #222; border-top-right-radius: 5px; }
+        .port-usb { height: 20px; background: #0077cc; }
+        .port-rj45 { height: 22px; background: #444; }
+        .port-audio { height: 20px; border-radius: 50%; background: #2ecc71; }
+
+        .port-label {
+            position: absolute;
+            left: 36px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #000;
+            color: var(--tech-yellow);
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            white-space: nowrap;
+            display: none;
+            pointer-events: none;
+            box-shadow: 3px 3px 0 #000;
+            z-index: 40;
+        }
+
+        .port-item:hover .port-label {
+            display: block;
+        }
+
+        .socket {
+            position: absolute;
+            border: 2px dashed #ffea00;
+            background: rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.75);
+            font-size: 10px;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .component {
+            position: absolute;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.6);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 11px;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+            z-index: 10;
+        }
+
+        .component:hover {
+            transform: translate(-2px, -2px) scale(1.02);
+            box-shadow: 6px 6px 0px var(--tech-cyan);
+            z-index: 15;
+        }
+
+        .component.removed {
+            display: none !important;
+        }
+
+        .comp-cpu { background: linear-gradient(135deg, #c0c0c0, #707070); color: #000; text-shadow: none; }
+        .comp-cooler { background: radial-gradient(circle, #ff416c, #8a2387); border-radius: 50%; }
+        .comp-ram { background: linear-gradient(90deg, #11998e, #38ef7d); }
+        .comp-gpu { background: linear-gradient(135deg, #0575E6, #00F260); }
+        .comp-psu { background: linear-gradient(135deg, #232526, #414345); }
+        .comp-storage { background: linear-gradient(135deg, #e65c00, #F9D423); }
+        .comp-nic { background: linear-gradient(135deg, #8E2DE2, #4A00E0); }
+
+        /* Sidebar */
+        .sidebar {
+            width: 324px;
+            height: 100%;
+            background: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            gap: 10px;
+        }
+
+        .hint-card {
+            background: #fff;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0 #000;
+            padding: 10px;
+        }
+
+        .hint-title {
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--primary-red);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .hint-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #000;
+            line-height: 1.4;
+            background: #ffe60022;
+            padding: 6px;
+            border: 1px dashed #000;
+        }
+
+        .organ-tray {
+            flex: 1;
+            background: #e8e4d9;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0 #000;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .tray-title {
+            font-weight: 900;
+            font-size: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tray-item {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 6px 8px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 2px 2px 0 #000;
+            animation: popIn 0.2s ease-out;
+        }
+
+        .btn {
+            background: var(--tech-yellow);
+            border: 3px solid #000;
+            box-shadow: 3px 3px 0 #000;
+            padding: 10px;
+            font-weight: 900;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 #000;
+        }
+
+        .btn-danger {
+            background: var(--primary-red);
+            color: #fff;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .manga-dialog {
+            width: 540px;
+            background: #fff;
+            border: 5px solid #000;
+            box-shadow: 10px 10px 0 var(--primary-red), 12px 12px 0 #000;
+            padding: 20px;
+            position: relative;
+        }
+
+        .dialog-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            border-bottom: 3px solid #000;
+            padding-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            background: #f0f0f0;
+            padding: 10px;
+            border: 2px solid #000;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .opt-btn {
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 #000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .opt-btn:hover {
+            background: var(--tech-yellow);
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 #000;
+        }
+
+        .cut-box {
+            background: #1e1e28;
+            border: 5px solid #fff;
+            box-shadow: 0 0 30px var(--primary-red);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .cut-instructions {
+            color: var(--tech-yellow);
+            font-weight: 900;
+            font-size: 18px;
+            margin-bottom: 12px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        #cutting-canvas {
+            background: #0d0d12;
+            border: 3px solid #fff;
+            cursor: crosshair;
+        }
+
+        /* Result Cards */
+        .result-card {
+            width: 580px;
+            background: var(--panel-bg);
+            border: 6px solid #000;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .victory-style { box-shadow: 12px 12px 0 var(--tech-cyan), 15px 15px 0 #000; }
+        .failure-style { box-shadow: 12px 12px 0 var(--primary-red), 15px 15px 0 #000; }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .result-badge { font-size: 60px; margin-bottom: 10px; }
+        .result-title { font-size: 28px; font-weight: 900; color: #000; margin-bottom: 10px; }
+        .result-msg { font-size: 15px; font-weight: 700; color: #222; line-height: 1.6; margin-bottom: 20px; background: #fff; padding: 15px; border: 3px solid #000; box-shadow: 4px 4px 0 #000; width: 100%; white-space: pre-line; }
+
+        .card-reward-box {
+            background: var(--tech-yellow);
+            border: 3px solid #000;
+            padding: 12px;
+            font-weight: 900;
+            font-size: 18px;
+            color: #000;
+            margin-bottom: 20px;
+            box-shadow: 4px 4px 0 #000;
+            width: 100%;
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.98); }
+            100% { transform: scale(1.02); }
+        }
+
+        .result-actions { display: flex; gap: 15px; width: 100%; }
+
+        /* Operating Room Pre-Game Transition Modal */
+        #loading-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 250;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #loading-modal.active {
+            display: flex;
+        }
+
+        .or-title {
+            color: var(--primary-red);
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 900;
+            font-size: 38px;
+            letter-spacing: 3px;
+            text-shadow: 0 0 15px var(--primary-red);
+            margin-bottom: 20px;
+            animation: flashText 0.8s infinite alternate;
+        }
+
+        @keyframes flashText {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        /* Pulse ECG Line Effect */
+        .ecg-box {
+            width: 400px;
+            height: 80px;
+            border: 3px solid var(--tech-cyan);
+            background: rgba(0, 240, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .ecg-line {
+            position: absolute;
+            top: 50%;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: var(--tech-cyan);
+            box-shadow: 0 0 10px var(--tech-cyan);
+            animation: scanECG 1.2s infinite linear;
+        }
+
+        @keyframes scanECG {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .or-sub {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        /* Bottom-Right Watermark */
+        .watermark {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 900;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--tech-yellow);
+            padding: 4px 10px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 300;
+            letter-spacing: 1px;
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        #fx-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 80;
+        }
+    </style>
+</head>
+<body>
+
+<div class="manga-bg"></div>
+
+<div id="app">
+    <!-- Header -->
+    <header>
+        <div class="logo-title">
+            <span>⚡ HARDWARE SURGERY v6.0</span>
+        </div>
+        <div class="header-controls">
+            <div class="timer-box" id="timer">⏱️ 02:30</div>
+            <div id="patient-badge" class="patient-badge">診察中</div>
+        </div>
+    </header>
+
+    <!-- Screen 1: Select Screen -->
+    <div id="select-screen" class="screen active">
+        <div class="select-title">選擇手術對象 (SELECT PC PATIENT)</div>
+        <div class="patient-cards">
+            <!-- Casual -->
+            <div class="card" onclick="triggerORTransition('casual')">
+                <div class="card-img">🖥️</div>
+                <div class="card-title">1. 輕度發燒友主機</div>
+                <div class="card-desc">基礎家用主機。構造簡潔，考核基本核心部件：CPU、散熱風扇、RAM、電源供應器及 3.5" 硬碟。</div>
+                <button class="btn" style="width: 100%; margin-top: auto;">進入手術室 →</button>
+            </div>
+
+            <!-- Hardcore -->
+            <div class="card" onclick="triggerORTransition('hardcore')">
+                <div class="card-img">⚙️</div>
+                <div class="card-title">2. 重度發燒友主機</div>
+                <div class="card-desc">高階電競工作站。考核進階考題：水冷系統、獨顯 VRAM、NVMe PCIe 通道、全雙工 2.5G 網卡及 850W 金牌 PSU。</div>
+                <button class="btn btn-danger" style="width: 100%; margin-top: auto;">進入手術室 →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Surgery Room -->
+    <div id="surgery-screen" class="screen">
+        <div class="operating-table">
+            <div class="surgery-grid"></div>
+
+            <div id="pc-case">
+                <div id="motherboard">
+                    <!-- Rear I/O Panel -->
+                    <div class="io-panel">
+                        <div class="port-item port-ps2" onclick="inspectPort('PS/2 埠', '用於傳統鍵盤/滑鼠之介面（紫/綠）。')">
+                            <span class="port-label">PS/2 埠</span>
+                        </div>
+                        <div class="port-item port-hdmi" onclick="inspectPort('HDMI 介面', '高清晰度多媒體介面，同時傳輸高清視訊與音訊。')">
+                            <span class="port-label">HDMI 口</span>
+                        </div>
+                        <div class="port-item port-dp" onclick="inspectPort('DisplayPort (DP)', '高頻寬顯示介面，支援高更新率與高解析度。')">
+                            <span class="port-label">DP 埠</span>
+                        </div>
+                        <div class="port-item port-usb" onclick="inspectPort('USB 3.0 介面', '通用序列總線，支援熱插拔與高速數據傳輸。')">
+                            <span class="port-label">USB 3.0</span>
+                        </div>
+                        <div class="port-item port-rj45" onclick="inspectPort('RJ-45 網絡介面', '連接乙太網雙絞線（網線），提供有線網絡。')">
+                            <span class="port-label">RJ-45 網口</span>
+                        </div>
+                        <div class="port-item port-audio" onclick="inspectPort('3.5mm 音訊孔', '模擬音訊輸出/輸入孔，用於耳機或麥克風。')">
+                            <span class="port-label">耳機/音訊孔</span>
+                        </div>
+                    </div>
+
+                    <!-- Motherboard Sockets -->
+                    <div class="socket" id="sock-cpu" style="top: 50px; left: 130px; width: 100px; height: 100px;">CPU 插座<br>(LGA)</div>
+                    <div class="socket" id="sock-ram1" style="top: 50px; left: 260px; width: 20px; height: 160px;">DIMM1</div>
+                    <div class="socket" id="sock-ram2" style="top: 50px; left: 290px; width: 20px; height: 160px;">DIMM2</div>
+                    <div class="socket" id="sock-gpu" style="top: 260px; left: 60px; width: 280px; height: 40px;">PCIe x16 顯示卡插槽</div>
+                    <div class="socket" id="sock-nic" style="top: 330px; left: 60px; width: 180px; height: 30px;">PCIe x1 網卡插槽</div>
+                    <div class="socket" id="sock-m2" style="top: 220px; left: 130px; width: 90px; height: 25px;">M.2 NVMe 插槽</div>
+                </div>
+
+                <div class="socket" id="sock-psu" style="top: 470px; left: 430px; width: 130px; height: 150px;">電源位 (PSU)</div>
+                <div class="socket" id="sock-hdd" style="top: 50px; left: 430px; width: 130px; height: 100px;">3.5" 硬碟架</div>
+
+                <div id="components-layer"></div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="hint-card">
+                <div class="hint-title">🩺 主刀醫生密令 (CRYPTIC HINT)</div>
+                <div class="hint-text" id="hint-text">破解密令中...</div>
+            </div>
+
+            <div class="organ-tray">
+                <div class="tray-title">
+                    <span>已取出部件</span>
+                    <span id="removed-count" style="color: var(--primary-red);">0 / 0</span>
+                </div>
+                <div id="removed-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+            </div>
+
+            <button class="btn btn-danger" onclick="resetSurgery()">↺ 重置本次手術</button>
+            <button class="btn" onclick="exitSurgery()">🔙 退出並選擇其他患者</button>
+        </div>
+    </div>
+
+    <!-- Operating Room Transition Animation Modal -->
+    <div id="loading-modal">
+        <div class="or-title">🚨 手術室準備中...</div>
+        <div class="ecg-box">
+            <div class="ecg-line"></div>
+        </div>
+        <div class="or-sub" id="loading-status-text">正在消毒手術刀與初始化監測儀器...</div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div class="modal-overlay" id="quiz-modal">
+        <div class="manga-dialog">
+            <div class="dialog-header">
+                <div style="font-size: 30px;">💉</div>
+                <div>
+                    <div style="font-size: 18px; font-weight: 900;" id="quiz-title">診斷確認</div>
+                    <div style="font-size: 11px; color: #666;">回答 DSE ICT 考題以啟動手術刀</div>
+                </div>
+            </div>
+            <div class="question-text" id="quiz-question">載入中...</div>
+            <div class="options-container" id="quiz-options"></div>
+        </div>
+    </div>
+
+    <!-- Cutting Minigame Modal -->
+    <div class="modal-overlay" id="cut-modal">
+        <div class="cut-box">
+            <div class="cut-instructions" id="cut-instructions">✂️ 沿著虛線圖案繪畫一圈進行切開！</div>
+            <canvas id="cutting-canvas" width="360" height="260"></canvas>
+            <div style="color: #bbb; font-size: 12px; margin-top: 8px;">請用滑鼠或觸控一筆劃圍繞虛線形狀</div>
+        </div>
+    </div>
+
+    <!-- Victory Screen Modal -->
+    <div class="modal-overlay" id="victory-modal">
+        <div class="result-card victory-style">
+            <div class="result-badge" id="victory-badge">🏆</div>
+            <div class="result-title" id="victory-title" style="text-shadow: 2px 2px 0 var(--tech-yellow);">手術大成功！</div>
+            <div class="result-msg" id="victory-msg">恭喜通關！</div>
+            <div class="card-reward-box" id="victory-reward" style="display: none;">
+                🎁 獎勵：請向 哈地老師 領取實體卡片！
+            </div>
+            <div class="result-actions" id="victory-actions"></div>
+        </div>
+    </div>
+
+    <!-- Failure Screen Modal -->
+    <div class="modal-overlay" id="failure-modal">
+        <div class="result-card failure-style">
+            <div class="result-badge">💀</div>
+            <div class="result-title" style="color: var(--primary-red); text-shadow: 2px 2px 0 #000;">SURGERY FAILED — 手術失敗</div>
+            <div class="result-msg" id="failure-msg">時間耗盡！主機過熱停機，器官未及時取出！</div>
+            <div class="result-actions">
+                <button class="btn btn-danger" style="flex: 1;" onclick="closeFailureModal(); resetSurgery();">↺ 重新嘗試手術</button>
+                <button class="btn" style="flex: 1;" onclick="closeFailureModal(); exitSurgery();">🔙 返回主選單</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom-Right Watermark -->
+    <div class="watermark">哈地出品</div>
+
+    <!-- FX Canvas -->
+    <canvas id="fx-canvas"></canvas>
+</div>
+
+<script>
+    /* Databases for Casual & Hardcore */
+    const HARDWARE_DB_CASUAL = {
+        cooler: {
+            name: 'CPU 散熱風扇',
+            hint: '【密令 1】主機發出高熱！先移除鎖在運算核心正上方、帶有風扇的散熱器官！',
+            question: '在移除 CPU 散熱風扇時，底座塗有灰色散熱膏，主要功能為何？',
+            options: [
+                { text: 'A. 填補金屬微小空隙，提高傳熱效率', correct: true },
+                { text: 'B. 黏牢散熱器防止脫落', correct: false }
+            ]
+        },
+        cpu: {
+            name: '中央處理器 (CPU)',
+            hint: '【密令 2】風扇已移開。現在可以取出負責執行算術與邏輯運算 (ALU) 的核心大腦！',
+            requires: ['cooler'],
+            question: 'DSE ICT 基礎觀念：CPU 中的算術及邏輯單元 (ALU) 負責什麼？',
+            options: [
+                { text: 'A. 執行加減比較等算術運算與邏輯判斷', correct: true },
+                { text: 'B. 永久儲存數據與系統檔案', correct: false }
+            ]
+        },
+        ram1: {
+            name: '主記憶體 (RAM 1)',
+            hint: '【密令 3】尋找插在長條插槽上、斷電後數據會消失的高速揮發性記憶體！',
+            question: '關閉電腦電源後，主記憶體 (RAM) 中的數據會發生什麼事？',
+            options: [
+                { text: 'A. 全部消失 (屬揮發性記憶體)', correct: true },
+                { text: 'B. 自動儲存到晶片中 (非揮發性)', correct: false }
+            ]
+        },
+        psu: {
+            name: '電源供應器 (PSU)',
+            hint: '【密令 4】尋找角落最沉重、負責將交流電 (AC) 轉為直流電 (DC) 的能量心臟！',
+            question: '電源供應器 (PSU) 在電腦中的主要能量轉換為何？',
+            options: [
+                { text: 'A. 將家用交流電 (AC) 轉為電腦用直流電 (DC)', correct: true },
+                { text: 'B. 將直流電 (DC) 轉為交流電 (AC)', correct: false }
+            ]
+        },
+        hdd: {
+            name: '3.5" 機械硬碟 (HDD)',
+            hint: '【密令 5】移出置於硬碟架上、利用磁性盤片進行大容量儲存的傳統輔助儲存設備！',
+            question: '傳統機械硬碟 (HDD) 比起 SSD 的主要優點是？',
+            options: [
+                { text: 'A. 每 GB 儲存成本較低，適合大容量備份', correct: true },
+                { text: 'B. 完全沒有機械讀寫噪音', correct: false }
+            ]
+        }
+    };
+
+    const HARDWARE_DB_HARDCORE = {
+        cooler: {
+            name: '水冷 CPU 散熱頭',
+            hint: '【密令 1】解剖高階水冷系統！必須先拆卸循環水冷頭以曝露旗艦 CPU！',
+            question: 'DSE ICT 進階觀念：一體式水冷 (AIO Liquid Cooling) 比起傳統風冷散熱器的主要優勢為何？',
+            options: [
+                { text: 'A. 液體比熱容量較高，能更迅速帶走極高 TDP 產生的熱量', correct: true },
+                { text: 'B. 水冷完全不需要使用任何風扇散熱', correct: false }
+            ]
+        },
+        cpu: {
+            name: '旗艦級 CPU',
+            hint: '【密令 2】水冷頭已移開！解剖具備多核心 (Multi-core) 與超執行緒 (Hyper-Threading) 的運算核心！',
+            requires: ['cooler'],
+            question: 'CPU 的「快取記憶體 (Cache Memory, L1/L2/L3)」主要目的是什麼？',
+            options: [
+                { text: 'A. 縮短 CPU 存取 SRAM/DRAM 的時間差，提升執行效率', correct: true },
+                { text: 'B. 增加硬碟的永久儲存空間', correct: false }
+            ]
+        },
+        ram1: {
+            name: 'RGB DDR5 RAM 1',
+            hint: '【密令 3】拔除第一條高頻率、高電壓且具備 RGB 燈效的高速主記憶體！',
+            question: '在 DSE ICT 中，RAM 上的「ECC (Error-Correcting Code)」技術主要有何功能？',
+            options: [
+                { text: 'A. 檢測並修正記憶體中的單位元數據錯誤，提高系統穩定度', correct: true },
+                { text: 'B. 自動將 RAM 的頻率提升兩倍', correct: false }
+            ]
+        },
+        ram2: {
+            name: 'RGB DDR5 RAM 2',
+            hint: '【密令 4】拔除第二條記憶體以切斷雙通道 (Dual-Channel) 架構！',
+            question: '當兩條同規格 RAM 運作於雙通道模式時，記憶體控制器的哪項指標會提升？',
+            options: [
+                { text: 'A. 數據匯流排寬度 (Bus Width) 翻倍，提升傳輸頻寬', correct: true },
+                { text: 'B. 單條 RAM 的儲存容量自動翻倍', correct: false }
+            ]
+        },
+        ssd: {
+            name: 'M.2 NVMe SSD',
+            hint: '【密令 5】取出鎖在主機板上、走 PCIe 通道的高速 NVMe 快閃記憶體！',
+            question: 'NVMe SSD 比起傳統 SATA SSD 讀寫速度快數倍，最主要的原因是？',
+            options: [
+                { text: 'A. 使用高頻寬 PCIe 匯流排，打破 SATA 3.0 (6Gbps) 的速度瓶頸', correct: true },
+                { text: 'B. NVMe 使用了磁性盤片高速旋轉', correct: false }
+            ]
+        },
+        gpu: {
+            name: '高階獨立顯示卡 (GPU)',
+            hint: '【密令 6】拔除插在 PCIe x16 插槽上、擁有龐大 GDDR 顯存 (VRAM) 的圖像顯示卡！',
+            question: '顯示卡上的「專用顯存 (VRAM)」主要用作處理什麼數據？',
+            options: [
+                { text: 'A. 暫存 3D 貼圖、影格緩衝區 (Frame Buffer) 與光線追蹤數據', correct: true },
+                { text: 'B. 儲存作業系統 Bootloader 引導檔案', correct: false }
+            ]
+        },
+        nic: {
+            name: '2.5G 獨立網卡 (NIC)',
+            hint: '【密令 7】取下 PCIe x1 插槽上、支援全雙工 (Full-Duplex) 高速傳輸的獨立網絡卡！',
+            question: '網絡卡 (NIC) 在全雙工 (Full-Duplex) 模式下運作意味著什麼？',
+            options: [
+                { text: 'A. 設備可以同時進行數據的發送與接收，互不干擾', correct: true },
+                { text: 'B. 設備同一時間只能選擇發送或接收數據', correct: false }
+            ]
+        },
+        psu: {
+            name: '850W 金牌 PSU',
+            hint: '【密令 8】拆卸具備 80 Plus 金牌轉換效率認證的高功率電源供應器！',
+            question: '電源供應器獲取「80 PLUS 金牌認證」代表其具備何種特性？',
+            options: [
+                { text: 'A. 在不同負載下，電能轉換效率 (Efficiency) 達 80%~90% 以上，減少廢熱', correct: true },
+                { text: 'B. 能將直流電百分之百完全不損耗地輸出', correct: false }
+            ]
+        },
+        hdd: {
+            name: '4TB 機械硬碟 (HDD)',
+            hint: '【密令 9】最後移出置於硬碟架上的大容量 3.5" 機械備份硬碟！',
+            question: '在資料安全角度，企業常用多顆 HDD 組成 RAID 1，其主要功能為何？',
+            options: [
+                { text: 'A. 磁碟鏡像 (Mirroring)，提供容錯 (Fault Tolerance) 備份', correct: true },
+                { text: 'B. 將數據切碎以極速提升寫入速度', correct: false }
+            ]
+        }
+    };
+
+    const PATIENTS = {
+        casual: [
+            { id: 'cooler', style: 'top: 85px; left: 145px; width: 110px; height: 110px;', class: 'comp-cooler', label: 'CPU 散熱風扇' },
+            { id: 'cpu', style: 'top: 90px; left: 150px; width: 100px; height: 100px;', class: 'comp-cpu', label: 'CPU' },
+            { id: 'ram1', style: 'top: 90px; left: 280px; width: 20px; height: 160px;', class: 'comp-ram', label: 'RAM' },
+            { id: 'psu', style: 'top: 480px; left: 440px; width: 130px; height: 150px;', class: 'comp-psu', label: '電源供應器 (PSU)' },
+            { id: 'hdd', style: 'top: 60px; left: 440px; width: 130px; height: 100px;', class: 'comp-storage', label: '3.5" 硬碟 (HDD)' }
+        ],
+        hardcore: [
+            { id: 'cooler', style: 'top: 85px; left: 145px; width: 110px; height: 110px;', class: 'comp-cooler', label: '水冷散熱頭' },
+            { id: 'cpu', style: 'top: 90px; left: 150px; width: 100px; height: 100px;', class: 'comp-cpu', label: '高階 CPU' },
+            { id: 'ram1', style: 'top: 90px; left: 280px; width: 20px; height: 160px;', class: 'comp-ram', label: 'RAM 1' },
+            { id: 'ram2', style: 'top: 90px; left: 310px; width: 20px; height: 160px;', class: 'comp-ram', label: 'RAM 2' },
+            { id: 'ssd', style: 'top: 260px; left: 150px; width: 90px; height: 25px;', class: 'comp-storage', label: 'NVMe SSD' },
+            { id: 'gpu', style: 'top: 300px; left: 80px; width: 280px; height: 50px;', class: 'comp-gpu', label: '獨立顯示卡 (GPU)' },
+            { id: 'nic', style: 'top: 370px; left: 80px; width: 180px; height: 35px;', class: 'comp-nic', label: '獨立網卡 (NIC)' },
+            { id: 'psu', style: 'top: 480px; left: 440px; width: 130px; height: 150px;', class: 'comp-psu', label: '850W PSU' },
+            { id: 'hdd', style: 'top: 60px; left: 440px; width: 130px; height: 100px;', class: 'comp-storage', label: '大容量 HDD' }
+        ]
+    };
+
+    /* State Variables */
+    let currentMode = 'casual';
+    let removedComponents = [];
+    let pendingComponentId = null;
+    let totalComponentsCount = 0;
+    let timerInterval = null;
+    let timeLeft = 150;
+
+    /* Initialize App */
+    window.addEventListener('load', () => {
+        initCanvas();
+        initCuttingCanvas();
+        window.addEventListener('resize', initCanvas);
+    });
+
+    function getHardwareDict() {
+        return currentMode === 'casual' ? HARDWARE_DB_CASUAL : HARDWARE_DB_HARDCORE;
+    }
+
+    /* Pre-Game Operating Room Transition Animation */
+    function triggerORTransition(mode) {
+        const loadingModal = document.getElementById('loading-modal');
+        const statusText = document.getElementById('loading-status-text');
+        
+        loadingModal.classList.add('active');
+        statusText.innerText = mode === 'casual' ? '正在準備：輕度發燒友解剖室...' : '正在準備：重度發燒友電競手術室...';
+
+        triggerSpark(window.innerWidth / 2, window.innerHeight / 2, '#00f0ff');
+
+        setTimeout(() => {
+            loadingModal.classList.remove('active');
+            startSurgery(mode);
+        }, 1400); // 1.4s theatrical transition
+    }
+
+    function startSurgery(mode) {
+        currentMode = mode;
+        removedComponents = [];
+        
+        document.getElementById('select-screen').classList.remove('active');
+        document.getElementById('surgery-screen').classList.add('active');
+        closeVictoryModal();
+        closeFailureModal();
+
+        document.getElementById('patient-badge').innerText = mode === 'casual' ? '病人：輕度發燒友' : '病人：重度發燒友';
+        
+        renderComponents();
+        updateUI();
+        startTimer(150);
+        updateCrypticHint();
+    }
+
+    function renderComponents() {
+        const layer = document.getElementById('components-layer');
+        layer.innerHTML = '';
+        const data = PATIENTS[currentMode];
+        totalComponentsCount = data.length;
+
+        data.forEach(comp => {
+            const el = document.createElement('div');
+            el.className = `component ${comp.class}`;
+            el.id = `comp-${comp.id}`;
+            el.style = comp.style;
+            el.innerHTML = `<span>${comp.label}</span>`;
+            el.onclick = (e) => handleComponentClick(comp.id, e);
+            layer.appendChild(el);
+        });
+    }
+
+    function handleComponentClick(id, event) {
+        const dict = getHardwareDict();
+        const info = dict[id];
+
+        if (info && info.requires) {
+            const missing = info.requires.filter(reqId => !removedComponents.includes(reqId));
+            if (missing.length > 0) {
+                triggerSpark(event.clientX, event.clientY, '#ff2a5f');
+                alert(`⚠️ 無法切開！必須先拔除頂部的【${dict[missing[0]].name}】！`);
+                return;
+            }
+        }
+
+        pendingComponentId = id;
+        showQuiz(info);
+    }
+
+    /* Timer System */
+    function startTimer(seconds) {
+        clearInterval(timerInterval);
+        timeLeft = seconds;
+        updateTimerDisplay();
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                handleTimeoutFailure();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        document.getElementById('timer').innerText = `⏱️ ${m}:${s}`;
+    }
+
+    function handleTimeoutFailure() {
+        triggerBloodSplat(window.innerWidth / 2, window.innerHeight / 2, 90);
+        
+        document.getElementById('quiz-modal').classList.remove('active');
+        document.getElementById('cut-modal').classList.remove('active');
+
+        const remainingCount = totalComponentsCount - removedComponents.length;
+        document.getElementById('failure-msg').innerText = 
+            `⏱️ 2 分 30 秒倒計時結束！\n主機因過熱燒毀，尚有 ${remainingCount} 個器官部件未及時取出！\n\n主刀醫師，請迅速檢討觀念並重新挑戰！`;
+        
+        document.getElementById('failure-modal').classList.add('active');
+    }
+
+    function closeFailureModal() {
+        document.getElementById('failure-modal').classList.remove('active');
+    }
+
+    function closeVictoryModal() {
+        document.getElementById('victory-modal').classList.remove('active');
+    }
+
+    function updateCrypticHint() {
+        const activeList = PATIENTS[currentMode];
+        const nextComp = activeList.find(c => !removedComponents.includes(c.id));
+        const dict = getHardwareDict();
+
+        if (nextComp && dict[nextComp.id]) {
+            document.getElementById('hint-text').innerText = dict[nextComp.id].hint;
+        } else {
+            document.getElementById('hint-text').innerText = '🎉 所有器官已成功解剖！主機完全剖析完畢！';
+        }
+    }
+
+    /* Quiz Modal */
+    function showQuiz(info) {
+        const modal = document.getElementById('quiz-modal');
+        document.getElementById('quiz-title').innerText = `解剖診斷：${info.name}`;
+        document.getElementById('quiz-question').innerText = info.question;
+
+        const optsContainer = document.getElementById('quiz-options');
+        optsContainer.innerHTML = '';
+
+        info.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerHTML = `<span style="background:#000; color:#fff; padding:2px 6px;">${idx === 0 ? 'A' : 'B'}</span> <span>${opt.text}</span>`;
+            btn.onclick = () => handleAnswer(opt.correct);
+            optsContainer.appendChild(btn);
+        });
+
+        modal.classList.add('active');
+    }
+
+    function handleAnswer(isCorrect) {
+        document.getElementById('quiz-modal').classList.remove('active');
+
+        if (isCorrect) {
+            startCuttingMinigame();
+        } else {
+            triggerBloodSplat(window.innerWidth / 2, window.innerHeight / 2, 40);
+            timeLeft = Math.max(0, timeLeft - 15);
+            alert('❌ 診斷錯誤！手術刀失誤，扣除 15 秒存活時間！');
+        }
+    }
+
+    /* Minigame: Cutting Canvas with Random Shapes */
+    let cutCanvas, cutCtx, isDrawing = false, tracePoints = [];
+
+    function initCuttingCanvas() {
+        cutCanvas = document.getElementById('cutting-canvas');
+        cutCtx = cutCanvas.getContext('2d');
+
+        cutCanvas.addEventListener('mousedown', startTrace);
+        cutCanvas.addEventListener('mousemove', drawTrace);
+        cutCanvas.addEventListener('mouseup', endTrace);
+
+        cutCanvas.addEventListener('touchstart', (e) => startTrace(e.touches[0]));
+        cutCanvas.addEventListener('touchmove', (e) => drawTrace(e.touches[0]));
+        cutCanvas.addEventListener('touchend', endTrace);
+    }
+
+    function startCuttingMinigame() {
+        document.getElementById('cut-modal').classList.add('active');
+        generateRandomCutShape();
+    }
+
+    function generateRandomCutShape() {
+        cutCtx.clearRect(0, 0, cutCanvas.width, cutCanvas.height);
+        
+        cutCtx.strokeStyle = '#ffe600';
+        cutCtx.lineWidth = 4;
+        cutCtx.setLineDash([8, 8]);
+        cutCtx.beginPath();
+
+        const cx = 180, cy = 130;
+        const shapes = ['circle', 'triangle', 'star', 'polygon', 'organ_blob'];
+        const chosen = shapes[Math.floor(Math.random() * shapes.length)];
+
+        if (chosen === 'circle') {
+            const r = 75 + Math.random() * 15;
+            cutCtx.arc(cx, cy, r, 0, Math.PI * 2);
+        } 
+        else if (chosen === 'triangle') {
+            cutCtx.moveTo(cx, cy - 80);
+            cutCtx.lineTo(cx + 90, cy + 60);
+            cutCtx.lineTo(cx - 90, cy + 60);
+            cutCtx.closePath();
+        } 
+        else if (chosen === 'star') {
+            const pts = 5;
+            for (let i = 0; i < pts * 2; i++) {
+                const r = (i % 2 === 0) ? 85 : 40;
+                const angle = (i * Math.PI) / pts - Math.PI / 2;
+                const x = cx + r * Math.cos(angle);
+                const y = cy + r * Math.sin(angle);
+                if (i === 0) cutCtx.moveTo(x, y);
+                else cutCtx.lineTo(x, y);
+            }
+            cutCtx.closePath();
+        } 
+        else if (chosen === 'polygon') {
+            const sides = 6;
+            const r = 80;
+            for (let i = 0; i < sides; i++) {
+                const angle = (i * 2 * Math.PI) / sides - Math.PI / 2;
+                const x = cx + r * Math.cos(angle);
+                const y = cy + r * Math.sin(angle);
+                if (i === 0) cutCtx.moveTo(x, y);
+                else cutCtx.lineTo(x, y);
+            }
+            cutCtx.closePath();
+        } 
+        else if (chosen === 'organ_blob') {
+            const numPoints = 8;
+            for (let i = 0; i <= numPoints; i++) {
+                const angle = (i * 2 * Math.PI) / numPoints;
+                const r = 70 + Math.sin(i * 2.5) * 20;
+                const x = cx + r * Math.cos(angle);
+                const y = cy + r * Math.sin(angle);
+                if (i === 0) cutCtx.moveTo(x, y);
+                else cutCtx.lineTo(x, y);
+            }
+            cutCtx.closePath();
+        }
+
+        cutCtx.stroke();
+        tracePoints = [];
+    }
+
+    function startTrace(e) {
+        isDrawing = true;
+        tracePoints = [];
+        cutCtx.setLineDash([]);
+        cutCtx.strokeStyle = '#ff2a5f';
+        cutCtx.lineWidth = 5;
+        cutCtx.beginPath();
+        const rect = cutCanvas.getBoundingClientRect();
+        cutCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function drawTrace(e) {
+        if (!isDrawing) return;
+        const rect = cutCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        tracePoints.push({x, y});
+        cutCtx.lineTo(x, y);
+        cutCtx.stroke();
+    }
+
+    function endTrace() {
+        if (!isDrawing) return;
+        isDrawing = false;
+
+        if (tracePoints.length > 20) {
+            document.getElementById('cut-modal').classList.remove('active');
+            executeDissection(pendingComponentId);
+        } else {
+            alert('⚠️ 切割痕跡過短！請沿著虛線繪畫圍繞一圈！');
+            generateRandomCutShape();
+        }
+    }
+
+    /* Dissection Execution & Victory Modal */
+    function executeDissection(id) {
+        const compEl = document.getElementById(`comp-${id}`);
+        if (!compEl) return;
+
+        const dict = getHardwareDict();
+        const rect = compEl.getBoundingClientRect();
+        triggerBloodSplat(rect.left + rect.width / 2, rect.top + rect.height / 2, 45);
+
+        compEl.classList.add('removed');
+        removedComponents.push(id);
+
+        const tray = document.getElementById('removed-list');
+        const item = document.createElement('div');
+        item.className = 'tray-item';
+        item.innerHTML = `<span>🩸 ${dict[id].name}</span><span style="font-size:10px; color:#888;">[已分離]</span>`;
+        tray.appendChild(item);
+
+        updateUI();
+        updateCrypticHint();
+
+        if (removedComponents.length === totalComponentsCount) {
+            clearInterval(timerInterval);
+            setTimeout(showVictoryModal, 400);
+        }
+    }
+
+    function showVictoryModal() {
+        const modal = document.getElementById('victory-modal');
+        const badge = document.getElementById('victory-badge');
+        const title = document.getElementById('victory-title');
+        const msg = document.getElementById('victory-msg');
+        const rewardBox = document.getElementById('victory-reward');
+        const actions = document.getElementById('victory-actions');
+
+        actions.innerHTML = '';
+
+        if (currentMode === 'casual') {
+            badge.innerText = '🎖️';
+            title.innerText = '輕度發燒友主機 — 通關成功！';
+            msg.innerText = '太優秀了！你已經完美掌握基礎 PC 部件結構與 DSE ICT 核心觀念！\n這只是小試身手，你準備好挑戰更高難度的考題了嗎？';
+            rewardBox.style.display = 'none';
+
+            const btnHardcore = document.createElement('button');
+            btnHardcore.className = 'btn btn-danger';
+            btnHardcore.style.flex = '1';
+            btnHardcore.innerText = '🔥 挑戰「重度發燒友」難度！';
+            btnHardcore.onclick = () => {
+                closeVictoryModal();
+                triggerORTransition('hardcore');
+            };
+
+            const btnMenu = document.createElement('button');
+            btnMenu.className = 'btn';
+            btnMenu.style.flex = '1';
+            btnMenu.innerText = '🔙 返回主選單';
+            btnMenu.onclick = () => {
+                closeVictoryModal();
+                exitSurgery();
+            };
+
+            actions.appendChild(btnHardcore);
+            actions.appendChild(btnMenu);
+        } 
+        else {
+            badge.innerText = '👑';
+            title.innerText = '特級神醫！重度發燒友大通關！';
+            msg.innerText = '太令人驚嘆了！你連水冷頭、NVMe PCIe 通道、VRAM 顯存、全雙工網卡與 80 PLUS PSU 都完美解剖！完全征服了最困難的考題概念！';
+            
+            rewardBox.style.display = 'block';
+            rewardBox.innerText = '🎁 榮譽成就：請向「哈地老師」出示此畫面領取專屬卡片！';
+
+            const btnAgain = document.createElement('button');
+            btnAgain.className = 'btn';
+            btnAgain.style.flex = '1';
+            btnAgain.innerText = '↺ 重新進行重度解剖';
+            btnAgain.onclick = () => {
+                closeVictoryModal();
+                resetSurgery();
+            };
+
+            const btnMenu = document.createElement('button');
+            btnMenu.className = 'btn btn-danger';
+            btnMenu.style.flex = '1';
+            btnMenu.innerText = '🔙 返回主選單';
+            btnMenu.onclick = () => {
+                closeVictoryModal();
+                exitSurgery();
+            };
+
+            actions.appendChild(btnAgain);
+            actions.appendChild(btnMenu);
+        }
+
+        triggerBloodSplat(window.innerWidth / 2, window.innerHeight / 2, 80);
+        modal.classList.add('active');
+    }
+
+    function updateUI() {
+        document.getElementById('removed-count').innerText = `${removedComponents.length} / ${totalComponentsCount}`;
+    }
+
+    function inspectPort(name, desc) {
+        triggerSpark(window.innerWidth / 2, window.innerHeight / 2, '#00f0ff');
+        alert(`🔍 主機板 I/O 介面檢視：\n【${name}】\n\nDSE ICT 觀念：${desc}`);
+    }
+
+    function resetSurgery() {
+        document.getElementById('removed-list').innerHTML = '';
+        startSurgery(currentMode);
+    }
+
+    function exitSurgery() {
+        clearInterval(timerInterval);
+        document.getElementById('surgery-screen').classList.remove('active');
+        document.getElementById('select-screen').classList.add('active');
+        document.getElementById('removed-list').innerHTML = '';
+    }
+
+    /* Particle Canvas FX Engine */
+    let canvas, ctx, particles = [];
+
+    function initCanvas() {
+        canvas = document.getElementById('fx-canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx = canvas.getContext('2d');
+    }
+
+    function triggerBloodSplat(x, y, amount) {
+        for (let i = 0; i < amount; i++) {
+            particles.push({
+                x: x, y: y,
+                vx: (Math.random() - 0.5) * 14,
+                vy: (Math.random() - 0.5) * 14,
+                radius: Math.random() * 6 + 3,
+                color: Math.random() > 0.3 ? '#ff2a5f' : '#800020',
+                alpha: 1, decay: Math.random() * 0.03 + 0.015
+            });
+        }
+    }
+
+    function triggerSpark(x, y, color) {
+        for (let i = 0; i < 20; i++) {
+            particles.push({
+                x: x, y: y,
+                vx: (Math.random() - 0.5) * 16,
+                vy: (Math.random() - 0.5) * 16,
+                radius: Math.random() * 3 + 1,
+                color: color || '#ffe600',
+                alpha: 1, decay: 0.04
+            });
+        }
+    }
+
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha -= p.decay;
+
+            if (p.alpha <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+        requestAnimationFrame(animateParticles);
+    }
+    requestAnimationFrame(animateParticles);
+</script>
+</body>
+</html>
